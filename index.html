@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Escape game de sensibilisation à la cybersécurité pour CARE France.">
+<title>Mission CARE : Sous cybermenace</title>
+<style>
+  :root { --bg:#07131a; --panel:#0c202a; --panel-2:#102a35; --line:#31525c; --text:#edf7f5; --muted:#a6bec2; --green:#4ee59a; --green-dark:#103d31; --orange:#ffae4a; --red:#ff6d70; --focus:#fff0a6; }
+  * { box-sizing:border-box; }
+  html { min-height:100%; background:var(--bg); }
+  body { margin:0; min-height:100vh; color:var(--text); font-family:Arial, Helvetica, sans-serif; background:radial-gradient(circle at 12% 10%, #123440 0, transparent 30rem), radial-gradient(circle at 88% 85%, #2b1f18 0, transparent 27rem), var(--bg); }
+  button { font:inherit; }
+  button:focus-visible { outline:3px solid var(--focus); outline-offset:3px; }
+  .app { width:min(1120px, calc(100% - 32px)); margin:auto; padding:24px 0 48px; }
+  .topbar { display:flex; align-items:center; justify-content:space-between; gap:20px; border-bottom:1px solid var(--line); padding-bottom:20px; }
+  .brand { display:flex; align-items:center; gap:12px; font-size:.79rem; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); font-weight:700; }
+  .brand-mark { display:grid; place-items:center; width:38px; height:38px; border:1px solid var(--green); color:var(--green); font-size:1.1rem; }
+  .timer { min-width:185px; padding:9px 13px; border:1px solid #73542e; background:#281f14; color:var(--orange); text-align:right; }
+  .timer small { display:block; color:#dbc39a; font-size:.63rem; letter-spacing:.08em; text-transform:uppercase; margin-bottom:2px; }
+  .timer strong { font-size:1.15rem; letter-spacing:.08em; font-variant-numeric:tabular-nums; }
+  .hero { display:grid; grid-template-columns:1.2fr .8fr; gap:35px; padding:52px 0 35px; }
+  .eyebrow, .room-label { color:var(--green); font-size:.76rem; font-weight:bold; letter-spacing:.13em; text-transform:uppercase; }
+  h1 { max-width:700px; margin:10px 0 14px; font-size:clamp(2.15rem, 5vw, 4.4rem); line-height:.98; letter-spacing:-.045em; }
+  .intro { max-width:650px; margin:0; color:var(--muted); font-size:1.08rem; line-height:1.6; }
+  .status-card { align-self:end; border:1px solid var(--line); padding:24px; background:linear-gradient(145deg, rgba(19,51,62,.82), rgba(8,23,30,.92)); box-shadow:15px 15px 0 rgba(0,0,0,.12); }
+  .status-card h2 { margin:0 0 18px; font-size:1rem; }
+  .signal { display:flex; gap:9px; align-items:center; color:var(--green); font-size:.84rem; font-weight:bold; }
+  .signal::before { content:""; width:9px; height:9px; border-radius:50%; background:var(--green); box-shadow:0 0 0 0 rgba(78,229,154,.6); animation:pulse 2s infinite; }
+  .rooms { display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; margin:10px 0 34px; }
+  .room { position:relative; min-height:132px; overflow:hidden; border:1px solid var(--line); padding:16px; background:rgba(8,25,33,.8); color:var(--muted); }
+  .room::after { content:""; position:absolute; top:0; right:12px; width:30px; height:100%; border:2px solid #405b62; border-bottom:0; background:linear-gradient(90deg, #19333a, #0c2028); transition:transform .75s ease, background .75s; transform-origin:right; }
+  .room.current { border-color:var(--orange); color:var(--text); box-shadow:inset 0 0 0 1px rgba(255,174,74,.2); }
+  .room.current::after { border-color:var(--orange); }
+  .room.unlocked { border-color:var(--green); color:var(--text); }
+  .room.unlocked::after { transform:perspective(140px) rotateY(-78deg); background:var(--green-dark); border-color:var(--green); }
+  .room-num { display:block; margin-bottom:16px; font-size:.7rem; letter-spacing:.1em; }
+  .room-title { display:block; max-width:80%; font-size:.94rem; font-weight:bold; line-height:1.28; }
+  .room-state { position:absolute; bottom:14px; left:16px; font-size:.68rem; letter-spacing:.08em; text-transform:uppercase; color:inherit; }
+  .mission-board { display:flex; justify-content:space-between; gap:18px; align-items:center; padding:20px 23px; border:1px solid var(--line); background:var(--panel); }
+  .mission-board p { margin:5px 0 0; color:var(--muted); line-height:1.45; }
+  .score-chip { flex:none; color:var(--green); border-left:1px solid var(--line); padding-left:22px; font-size:1.35rem; font-weight:bold; }
+  .modal { position:fixed; z-index:5; inset:0; display:grid; place-items:center; padding:20px; background:rgba(1,9,13,.79); backdrop-filter:blur(6px); }
+  .modal[hidden] { display:none; }
+  .terminal { width:min(750px, 100%); border:1px solid #4a6d74; background:var(--panel); box-shadow:0 22px 80px rgba(0,0,0,.58), 0 0 0 7px rgba(78,229,154,.04); animation:enter .35s ease-out; }
+  .terminal-head { display:flex; justify-content:space-between; gap:14px; padding:12px 17px; border-bottom:1px solid var(--line); background:#102a32; color:var(--muted); font-size:.72rem; letter-spacing:.1em; text-transform:uppercase; }
+  .terminal-head span:last-child { color:var(--orange); }
+  .terminal-body { padding:28px; }
+  .terminal h2 { margin:7px 0 23px; font-size:clamp(1.22rem, 2.8vw, 1.72rem); line-height:1.32; }
+  .question-count { margin:0; color:var(--green); font-size:.78rem; letter-spacing:.09em; text-transform:uppercase; }
+  .answers { display:grid; gap:10px; }
+  .answer { width:100%; display:flex; gap:12px; align-items:flex-start; padding:14px 16px; border:1px solid #42616a; color:var(--text); background:#0e2730; text-align:left; line-height:1.42; cursor:pointer; transition:background .16s, border-color .16s, transform .16s; }
+  .answer:hover:not(:disabled) { transform:translateX(4px); border-color:var(--orange); background:#17323a; }
+  .answer:disabled { cursor:default; }
+  .answer-key { flex:none; display:grid; place-items:center; width:23px; height:23px; border:1px solid currentColor; color:var(--orange); font-size:.72rem; font-weight:bold; }
+  .answer.correct { border-color:var(--green); background:var(--green-dark); }
+  .answer.correct .answer-key { color:var(--green); }
+  .answer.incorrect { border-color:var(--red); background:#3a1c25; }
+  .answer.incorrect .answer-key { color:var(--red); }
+  .feedback { margin-top:20px; padding:17px; border-left:4px solid var(--green); background:#102a31; animation:enter .3s ease-out; }
+  .feedback.bad { border-color:var(--red); }
+  .feedback strong { display:block; margin-bottom:6px; color:var(--green); }
+  .feedback.bad strong { color:var(--red); }
+  .feedback p { margin:0; line-height:1.5; color:#d4e4e3; }
+  .continue, .restart { margin-top:18px; padding:12px 18px; border:1px solid var(--green); color:#062016; background:var(--green); font-weight:bold; cursor:pointer; }
+  .continue:hover, .restart:hover { background:#8af4bd; }
+  .unlock { text-align:center; padding:50px 28px; }
+  .unlock-icon { display:grid; place-items:center; width:72px; height:72px; margin:0 auto 18px; border:2px solid var(--green); border-radius:50%; color:var(--green); font-size:2rem; animation:unlock .85s ease-out; }
+  .unlock h2 { margin:0 0 10px; } .unlock p { margin:0; color:var(--muted); }
+  .results { width:min(780px, 100%); padding:36px; text-align:center; }
+  .results h2 { margin:8px 0 10px; font-size:clamp(1.8rem,4vw,3rem); }
+  .final-score { margin:25px auto; color:var(--green); font-size:clamp(3rem,8vw,5.5rem); font-weight:bold; line-height:1; }
+  .result-message { margin:0 auto 26px; font-size:1.1rem; color:#f4fbf9; }
+  .breakdown { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; text-align:left; }
+  .breakdown div { padding:13px; border:1px solid var(--line); background:#0d252d; }
+  .breakdown span { display:block; color:var(--muted); font-size:.83rem; margin-bottom:4px; }
+  .breakdown strong { color:var(--green); }
+  .restart { margin-top:28px; }
+  @keyframes pulse { 70% { box-shadow:0 0 0 8px rgba(78,229,154,0); } 100% { box-shadow:0 0 0 0 rgba(78,229,154,0); } }
+  @keyframes enter { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes unlock { 0% { transform:scale(.5) rotate(-25deg); opacity:0; } 70% { transform:scale(1.15) rotate(5deg); } 100% { transform:scale(1) rotate(0); opacity:1; } }
+  @media (max-width:720px) { .app { width:min(100% - 24px, 1120px); padding-top:12px; } .topbar { align-items:flex-start; } .brand { line-height:1.3; } .timer { min-width:145px; } .hero { grid-template-columns:1fr; padding:34px 0 24px; gap:22px; } .rooms { grid-template-columns:repeat(2,1fr); } .mission-board { align-items:flex-start; flex-direction:column; } .score-chip { border-left:0; border-top:1px solid var(--line); padding:12px 0 0; width:100%; } .terminal-body { padding:22px 18px; } .results { padding:25px 18px; } }
+  @media (max-width:430px) { .topbar { gap:8px; } .brand { font-size:.66rem; } .brand-mark { width:31px; height:31px; } .timer { min-width:130px; padding:7px; } .rooms { gap:8px; } .room { min-height:120px; padding:12px; } .room-state { left:12px; } .breakdown { grid-template-columns:1fr; } }
+  @media (prefers-reduced-motion:reduce) { *, *::before, *::after { animation-duration:.01ms !important; transition-duration:.01ms !important; } }
+</style>
+</head>
+<body>
+<main class="app" aria-labelledby="page-title">
+  <header class="topbar"><div class="brand"><span class="brand-mark" aria-hidden="true">◆</span>CARE France · Centre de mission cyber</div><div class="timer" aria-label="Temps décoratif avant le départ de la mission terrain"><small>Départ mission terrain</small><strong id="timer">01:00:00</strong></div></header>
+  <section class="hero"><div><p class="eyebrow">Alerte prioritaire / niveau orange</p><h1 id="page-title">Mission CARE :<br>Sous cybermenace</h1><p class="intro">Une mission humanitaire est en cours. Sécurisez les accès, les messages, les données bénéficiaires et les paiements avant qu'une cyberattaque ne compromette l'opération.</p></div><aside class="status-card"><h2>État de la mission</h2><div class="signal">Canal sécurisé opérationnel</div><p class="intro" style="font-size:.92rem;margin-top:15px">Répondez aux scénarios pour déverrouiller chaque zone. Chaque réponse est une occasion d'ancrer le bon réflexe.</p></aside></section>
+  <section class="rooms" id="rooms" aria-label="Progression des salles"></section>
+  <section class="mission-board" aria-live="polite"><div><p class="room-label" id="active-room">Initialisation</p><p id="mission-text">Chargement de la première salle…</p></div><div class="score-chip">Score <span id="score">0</span>/10</div></section>
+</main>
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="dialog-title"><section class="terminal" id="dialog-content"></section></div>
+<script>
+/* Banque fournie : les données restent uniquement en mémoire pendant la partie. */
+const rooms = [
+  { id:'hygiene', name:'Poste de travail sécurisé', pillar:'Hygiène numérique', count:3, questions:[
+    ['Vous devez créer un nouveau mot de passe pour votre messagerie professionnelle. Que choisissez-vous ?', '"Care2024!" (facile à deviner, lié à l\'organisation)', 'Un mot de passe complexe mais réutilisé sur plusieurs comptes', 'Une phrase de passe longue et unique, gérée via un gestionnaire de mots de passe', 'Un mot de passe unique et long protège même si un autre service est piraté.'],
+    ['Vous vous absentez 5 minutes de votre poste en open space. Que faites-vous ?', 'Rien, vous revenez vite', 'Vous fermez juste les dossiers sensibles ouverts', 'Vous verrouillez votre session (Windows+L)', 'Un poste déverrouillé est une porte ouverte même pour une absence courte.'],
+    ['Une mise à jour de sécurité s\'affiche sur votre ordinateur professionnel pendant une mission terrain. Vous...', 'L\'ignorez définitivement, ça ralentit le travail', 'La reportez à "plus tard" indéfiniment', 'L\'installez dès que la connexion le permet', 'Les mises à jour corrigent des failles activement exploitées.'],
+    ['On vous propose d\'activer la double authentification (MFA) sur votre compte CARE. Vous...', 'Refusez, c\'est trop contraignant', 'L\'activez seulement sur vos comptes personnels', 'L\'activez partout où c\'est possible, surtout sur les comptes professionnels', 'Le MFA bloque la majorité des connexions frauduleuses même avec un mot de passe volé.'],
+    ['Vous travaillez depuis un aéroport avant un vol pour une mission terrain. Le Wi-Fi public gratuit est disponible. Vous...', 'Vous connectez directement pour consulter vos mails professionnels', 'Vous vous connectez mais évitez les sites bancaires', 'Vous utilisez le VPN professionnel ou le partage de connexion de votre téléphone', 'Un Wi-Fi public non sécurisé peut exposer vos échanges à une interception.'],
+    ['Un collègue vous demande votre mot de passe pour accéder rapidement à un dossier partagé pendant votre absence. Vous...', 'Le lui donnez, c\'est un collègue de confiance', 'Le lui donnez mais lui demandez de le changer après usage', 'Refusez et lui donnez un accès partagé via les droits appropriés', 'Un mot de passe est strictement personnel et non transférable, même entre collègues.'],
+    ['Vous recevez une clé USB trouvée dans le hall d\'accueil avec écrit "Photos mission Liban". Vous...', 'La branchez sur votre poste pour voir à qui elle appartient', 'La donnez à un collègue pour qu\'il regarde', 'La remettez au service IT sans la brancher', 'Une clé USB inconnue peut contenir un logiciel malveillant qui s\'installe à l\'insertion.'],
+    ['Après plusieurs mois, votre mot de passe professionnel arrive à expiration et le système vous invite à le changer. Vous...', 'Ajoutez juste un chiffre à la fin de l\'ancien mot de passe', 'Créez un nouveau mot de passe complexe mais le notez sur un post-it', 'Créez un nouveau mot de passe unique stocké dans le gestionnaire de mots de passe', 'Un post-it ou une variation mineure reste une faille facilement exploitable.']
+  ]},
+  { id:'phishing', name:'Boîte mail piégée', pillar:'Phishing', count:3, questions:[
+    ['Vous recevez un email "urgent" du support informatique demandant vos identifiants pour "éviter la suspension de votre compte". Vous...', 'Répondez immédiatement avec vos identifiants', 'Cliquez sur le lien pour vérifier mais n\'entrez rien', 'Ne cliquez sur rien et signalez le mail au service IT/sécurité', 'Le support IT légitime ne demande jamais vos identifiants par email.'],
+    ['Un appel téléphonique d\'une personne se présentant comme "votre direction financière" vous demande en urgence de valider un virement inhabituel. Vous...', 'Exécutez le virement immédiatement, c\'est urgent', 'Rappelez le numéro indiqué par l\'appelant pour confirmer', 'Raccrochez et rappelez votre contact via un numéro officiel déjà connu', 'C\'est une technique classique de fraude au président ; il faut vérifier via un canal indépendant et connu.'],
+    ['Vous recevez un SMS prétendant venir d\'un service de livraison avec un lien de suivi de colis. Vous...', 'Cliquez sur le lien immédiatement', 'Cliquez mais sans donner d\'informations personnelles', 'Vérifiez l\'expéditeur et le numéro de suivi directement sur le site officiel du transporteur', 'Le smishing imite des marques connues pour voler des données ou installer un malware.'],
+    ['Un email provenant apparemment d\'un collègue vous demande d\'ouvrir en urgence une pièce jointe "facture_mission.zip". Le ton est inhabituel. Vous...', 'L\'ouvrez tout de suite, c\'est un collègue', 'Répondez au mail pour demander confirmation', 'Vérifiez l\'adresse exacte de l\'expéditeur et contactez le collègue par un autre canal (téléphone, Teams)', 'L\'adresse email peut être usurpée ou le compte du collègue compromis.'],
+    ['Vous recevez un message LinkedIn d\'un "recruteur" vous proposant un poste et demandant de télécharger un document pour "test technique". Vous...', 'Téléchargez et ouvrez le document immédiatement', 'Téléchargez mais ne l\'ouvrez pas sur votre poste professionnel', 'Vérifiez l\'identité du recruteur et évitez de télécharger un fichier non sollicité', 'Les faux recruteurs sont un vecteur courant pour diffuser des malwares ciblés.'],
+    ['Lors d\'un appel, votre interlocuteur reproduit étrangement bien la voix de votre directeur régional pour vous demander une information confidentielle. Vous...', 'Donnez l\'information, c\'est bien sa voix', 'Donnez une partie de l\'information par prudence', 'Vérifiez son identité par un autre canal avant de transmettre quoi que ce soit', 'Les voix peuvent être clonées par IA ; la vérification croisée reste indispensable.'],
+    ['Un email de "votre banque professionnelle" contient des fautes d\'orthographe et une adresse d\'expéditeur légèrement différente de l\'habituelle. Vous...', 'Faites confiance car le logo est identique', 'Appelez le numéro indiqué dans l\'email pour vérifier', 'Ignorez le mail et contactez votre banque via le numéro habituel déjà enregistré', 'Fautes et adresse suspecte sont des signaux classiques de phishing.'],
+    ['Un faux formulaire "mise à jour RH" vous redirige vers une page de connexion qui ressemble à celle de CARE mais avec une URL légèrement différente. Vous...', 'Entrez vos identifiants, la page ressemble à l\'originale', 'Entrez un mot de passe différent "au cas où"', 'Vérifiez l\'URL exacte et signalez la page au service IT sans rien saisir', 'Le phishing imite visuellement les pages légitimes ; seule l\'URL exacte permet de le détecter.']
+  ]},
+  { id:'rgpd', name:'Coffre des données bénéficiaires', pillar:'Données sensibles & RGPD', count:2, questions:[
+    ['Vous devez partager une liste de bénéficiaires d\'un programme avec un partenaire local. Vous...', 'L\'envoyez par mail en pièce jointe non protégée', 'L\'envoyez via mail avec mot de passe communiqué dans le même email', 'Utilisez un espace de partage sécurisé approuvé et un mot de passe transmis par un canal différent', 'Séparer le fichier et le mot de passe limite les risques en cas d\'interception du mail.'],
+    ['Vous terminez une mission terrain et devez vous débarrasser de dossiers papier contenant des données personnelles de bénéficiaires. Vous...', 'Les jetez à la poubelle classique', 'Les rangez dans une armoire pour "plus tard"', 'Les détruisez via une déchiqueteuse ou un prestataire habilité', 'Des documents jetés intacts peuvent être récupérés et exposer des données sensibles.'],
+    ['Vous voulez illustrer un rapport interne avec des photos de bénéficiaires prises en mission. Vous...', 'Publiez les photos avec noms complets sans vérification', 'Floutez les visages mais gardez les noms dans la légende', 'Vérifiez le consentement obtenu et anonymisez toute donnée identifiante non nécessaire', 'La protection des données bénéficiaires inclut le consentement éclairé et la minimisation des données.'],
+    ['Pour gagner du temps, vous copiez des données de bénéficiaires dans un tableur personnel stocké sur votre Drive personnel. Vous...', 'C\'est pratique, vous le faites régulièrement', 'Vous le faites uniquement temporairement puis supprimez après usage', 'Vous utilisez uniquement les outils professionnels approuvés, jamais de stockage personnel', 'Les outils personnels échappent au contrôle de sécurité de l\'organisation.'],
+    ['Vous utilisez un assistant d\'intelligence artificielle public pour reformuler un rapport contenant des témoignages de victimes. Vous...', 'Collez le texte complet tel quel dans l\'outil', 'Retirez juste les noms propres avant de coller', 'N\'utilisez pas d\'outil IA public pour des données sensibles, ou anonymisez totalement avant tout usage validé par votre organisation', 'Les données saisies dans un outil IA public peuvent être conservées ou réutilisées hors de votre contrôle.'],
+    ['Un email externe vous demande "pour une étude" la liste complète des bénéficiaires d\'un programme avec leurs coordonnées. Vous...', 'Envoyez la liste car la demande semble légitime', 'Demandez une autorisation orale rapide à un collègue avant d\'envoyer', 'Vérifiez la légitimité de la demande et la base légale via votre référent RGPD/DPO avant tout envoi', 'Toute transmission de données personnelles doit être validée et tracée, surtout vers l\'externe.'],
+    ['Vous constatez une possible fuite de données bénéficiaires (fichier mal partagé, accessible publiquement). Vous...', 'Ne rien dire pour éviter les ennuis', 'Corrigez vous-même discrètement sans en parler', 'Signalez immédiatement l\'incident au service IT/DPO pour déclencher la procédure', 'Un incident de données doit être signalé rapidement, c\'est une obligation légale et une protection pour les bénéficiaires.']
+  ]},
+  { id:'finance', name:'Salle des virements', pillar:'Fraude financière, terrain & IA', count:2, questions:[
+    ['Vous recevez un email signé par la direction demandant un virement urgent et confidentiel vers un nouveau compte partenaire, en dehors de la procédure habituelle. Vous...', 'Exécutez le virement rapidement vu l\'urgence affichée', 'Demandez confirmation par retour d\'email au même expéditeur', 'Appliquez la procédure standard de double validation et vérifiez par un canal indépendant', 'C\'est le scénario classique de la fraude au président ; aucune urgence ne doit faire sauter les contrôles.'],
+    ['Un partenaire terrain vous informe par mail d\'un changement de coordonnées bancaires pour les prochains virements. Vous...', 'Mettez à jour le RIB et effectuez le virement normalement', 'Mettez à jour après avoir répondu au même email pour confirmation', 'Vérifiez le changement par téléphone auprès d\'un contact connu avant toute modification', 'Le changement de RIB par email est un vecteur fréquent de fraude financière.'],
+    ['Vous êtes en mission dans un pays à risque et devez transporter un ordinateur professionnel contenant des données sensibles. Vous...', 'Le laissez sans surveillance dans la chambre d\'hôtel', 'Le gardez avec vous mais sans chiffrement particulier', 'Utilisez un appareil chiffré et dédié, avec accès minimal aux données nécessaires à la mission', 'Le principe de minimisation réduit l\'impact en cas de perte, vol ou inspection.'],
+    ['Vous perdez votre téléphone professionnel pendant un déplacement terrain. Vous...', 'Attendez de rentrer au bureau pour le signaler', 'Essayez de le retrouver vous-même avant de signaler', 'Signalez immédiatement la perte au service IT pour bloquer/effacer l\'appareil à distance', 'Chaque minute compte pour limiter l\'exposition des données sur un appareil perdu.'],
+    ['Vous utilisez une IA générative pour préparer rapidement un budget de mission incluant des montants sensibles. Vous...', 'Collez directement le budget complet avec tous les montants', 'Retirez juste le nom du bailleur avant de coller', 'Utilisez uniquement des outils IA validés par l\'organisation, ou anonymisez totalement les données confidentielles', 'Les données saisies dans des IA publiques peuvent sortir du périmètre de confidentialité de l\'organisation.'],
+    ['En déplacement, vous devez recharger votre téléphone professionnel et seule une borne de recharge USB publique est disponible. Vous...', 'Branchez directement votre câble USB sur la borne', 'Branchez mais surveillez l\'écran pendant la charge', 'Utilisez un adaptateur bloqueur de données ou votre propre chargeur secteur', 'Le "juice jacking" peut permettre d\'extraire des données via un port USB public compromis.'],
+    ['Vous recevez un message WhatsApp d\'un numéro inconnu prétendant être un nouveau responsable terrain demandant un paiement rapide en espèces pour une urgence locale. Vous...', 'Effectuez le paiement rapidement pour aider', 'Demandez une photo de pièce d\'identité avant de payer', 'Vérifiez son identité via la hiérarchie ou un contact officiel avant tout paiement', 'L\'urgence et le contact non vérifié sont des signaux typiques d\'une tentative de fraude.']
+  ]}
+];
+const state = { room:0, question:0, score:0, scores:[0,0,0,0], selected:[], locked:false, seconds:3600 };
+const $ = (selector) => document.querySelector(selector);
+const shuffle = (items) => { const copy = [...items]; for (let index = copy.length - 1; index > 0; index--) { const target = Math.floor(Math.random() * (index + 1)); [copy[index], copy[target]] = [copy[target], copy[index]]; } return copy; };
+function drawRooms() {
+  $('#rooms').innerHTML = rooms.map((room, index) => { const opening = index === state.room && state.question >= room.count; const unlocked = index < state.room || opening; return `<article class="room ${index === state.room ? 'current' : ''} ${unlocked ? 'unlocked' : ''}" id="room-${index}"><span class="room-num">SALLE 0${index + 1}</span><span class="room-title">${room.name}</span><span class="room-state">${unlocked ? 'Déverrouillée' : index === state.room ? 'En cours' : 'Verrouillée'}</span></article>`; }).join('');
+}
+function updateBoard() {
+  const room = rooms[state.room];
+  $('#score').textContent = state.score;
+  $('#active-room').textContent = room ? `Salle ${state.room + 1} · ${room.pillar}` : 'Mission terminée';
+  $('#mission-text').textContent = room ? `${room.name} · ${state.question + 1} question${state.question ? 's' : ''} sur ${room.count} à sécuriser.` : 'Les quatre zones de la mission sont sécurisées.';
+}
+function renderQuestion() {
+  const room = rooms[state.room], question = state.selected[state.room][state.question];
+  state.locked = false; updateBoard(); drawRooms();
+  $('#dialog-content').innerHTML = `<div class="terminal-head"><span>Terminal de sécurité / CARE France</span><span>Accès restreint</span></div><div class="terminal-body"><p class="question-count">${room.pillar} · scénario ${state.question + 1}/${room.count}</p><h2 id="dialog-title">${question[0]}</h2><div class="answers">${question.slice(1,4).map((answer, index) => `<button class="answer" type="button" data-answer="${index}" aria-label="Réponse ${String.fromCharCode(65+index)} : ${answer}"><span class="answer-key">${String.fromCharCode(65+index)}</span><span>${answer}</span></button>`).join('')}</div><div id="feedback"></div></div>`;
+  document.querySelector('.answer').focus();
+  document.querySelectorAll('.answer').forEach(button => button.addEventListener('click', () => answerQuestion(Number(button.dataset.answer))));
+}
+function answerQuestion(answer) {
+  if (state.locked) return;
+  state.locked = true;
+  const question = state.selected[state.room][state.question], correct = answer === 2;
+  document.querySelectorAll('.answer').forEach((button, index) => { button.disabled = true; if (index === 2) button.classList.add('correct'); if (index === answer && !correct) button.classList.add('incorrect'); });
+  if (correct) { state.score++; state.scores[state.room]++; }
+  $('#score').textContent = state.score;
+  $('#feedback').innerHTML = `<div class="feedback ${correct ? '' : 'bad'}" role="status"><strong>${correct ? 'Réflexe validé ✓' : 'Réflexe à consolider'}</strong><p>${question[4]}</p></div><button class="continue" type="button">Continuer</button>`;
+  $('.continue').focus(); $('.continue').addEventListener('click', nextQuestion);
+}
+function nextQuestion() { state.question++; if (state.question < rooms[state.room].count) renderQuestion(); else unlockRoom(); }
+function unlockRoom() {
+  const room = rooms[state.room]; drawRooms();
+  $('#dialog-content').innerHTML = `<div class="unlock"><div class="unlock-icon" aria-hidden="true">⌁</div><p class="question-count">Accès autorisé</p><h2 id="dialog-title">${room.name}<br>déverrouillée</h2><p>Les bonnes pratiques sont intégrées au plan de sécurisation de la mission.</p><button class="continue" type="button">${state.room === rooms.length - 1 ? 'Voir le bilan de mission' : 'Accéder à la salle suivante'}</button></div>`;
+  $('.continue').focus(); $('.continue').addEventListener('click', () => { state.room++; state.question=0; state.room < rooms.length ? renderQuestion() : renderResults(); });
+}
+function renderResults() {
+  updateBoard(); drawRooms();
+  const message = state.score >= 8 ? 'Mission accomplie — Compétences validées ✅' : state.score >= 5 ? 'Mission réussie de justesse — quelques points à consolider ⚠️' : 'Mission compromise — reprenez les fondamentaux ❌';
+  $('#dialog-content').innerHTML = `<div class="results"><p class="question-count">Bilan de mission</p><h2 id="dialog-title">Mission sécurisée</h2><div class="final-score">${state.score}<small style="font-size:.35em">/10</small></div><p class="result-message">${message}</p><div class="breakdown">${rooms.map((room,index) => `<div><span>${room.pillar}</span><strong>${state.scores[index]}/${room.count}</strong></div>`).join('')}</div><button class="restart" type="button">Rejouer la mission</button></div>`;
+  $('.restart').focus(); $('.restart').addEventListener('click', startGame);
+}
+// Keep played paths in memory so replaying this open page does not repeat a full scenario set.
+const seenPaths = new Set();
+function startGame() { let selected, path; do { selected = rooms.map(room => shuffle(room.questions).slice(0,room.count)); path = selected.flat().map(question => question[0]).join('|'); } while (seenPaths.has(path)); seenPaths.add(path); Object.assign(state, {room:0,question:0,score:0,scores:[0,0,0,0],selected}); renderQuestion(); }
+function tick() { state.seconds = state.seconds > 0 ? state.seconds - 1 : 3600; const h=String(Math.floor(state.seconds/3600)).padStart(2,'0'), m=String(Math.floor(state.seconds%3600/60)).padStart(2,'0'), s=String(state.seconds%60).padStart(2,'0'); $('#timer').textContent=`${h}:${m}:${s}`; }
+setInterval(tick, 1000); startGame();
+</script>
+</body>
+</html>
